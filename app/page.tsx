@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { items } from './items'
-import { throttle } from 'lodash-es'
+import { debounce } from 'lodash-es'
 
 export default function Page() {
   const menuItems = React.useRef<HTMLAnchorElement[]>([])
@@ -11,17 +11,18 @@ export default function Page() {
   function handleScroll() {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop
 
+    menuItems.current.forEach((item) => item.classList.remove('active'))
     sections.current.forEach((section, index) => {
       const prevSection = sections.current[index - 1]
-      const sectionTop = section.offsetTop
-      const sectionHeight = section.offsetHeight
 
       // 判断标题是否在视口中
-      if (sectionTop <= scrollTop && scrollTop < sectionTop + sectionHeight) {
+      if (
+        section.offsetTop <= scrollTop &&
+        scrollTop < section.offsetTop + section.offsetHeight
+      ) {
         // 找到对应的菜单项并高亮
         const menuItem = document.querySelector(`[data-target="${section.id}"]`)
         if (menuItem) {
-          menuItems.current.forEach((item) => item.classList.remove('active'))
           menuItem.classList.add('active')
         }
         return
@@ -29,12 +30,11 @@ export default function Page() {
       if (
         prevSection &&
         prevSection.offsetTop + prevSection.offsetHeight <= scrollTop &&
-        scrollTop < sectionTop
+        scrollTop < section.offsetTop
       ) {
         // 找到对应的菜单项并高亮
         const menuItem = document.querySelector(`[data-target="${section.id}"]`)
         if (menuItem) {
-          menuItems.current.forEach((item) => item.classList.remove('active'))
           menuItem.classList.add('active')
         }
       }
@@ -47,7 +47,7 @@ export default function Page() {
 
     handleScroll()
 
-    const onScroll = throttle(handleScroll, 100)
+    const onScroll = debounce(handleScroll, 100)
 
     window.addEventListener('scroll', onScroll)
     window.addEventListener('resize', onScroll)
