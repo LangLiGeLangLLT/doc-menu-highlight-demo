@@ -5,15 +5,15 @@ import { items } from './items'
 import { debounce } from 'lodash-es'
 
 export default function Page() {
-  const sections = React.useRef<HTMLElement[]>([])
   const [activeId, setActiveId] = React.useState<string>()
 
   function handleScroll() {
+    const sections = Array.from(document.querySelectorAll('section'))
     const scrollPosition = window.scrollY
 
     let currentActiveId: string | undefined
 
-    sections.current.forEach((section) => {
+    sections.forEach((section) => {
       if (
         section.offsetTop <= scrollPosition &&
         scrollPosition < section.offsetTop + section.offsetHeight
@@ -27,6 +27,8 @@ export default function Page() {
     }
   }
 
+  const onScroll = debounce(handleScroll, 10)
+
   const onClick = debounce((e: React.MouseEvent<HTMLAnchorElement>) => {
     const target = document.querySelector(
       `#${(e.target as HTMLAnchorElement).dataset.target}`
@@ -36,11 +38,7 @@ export default function Page() {
   }, 10)
 
   React.useEffect(() => {
-    sections.current = Array.from(document.querySelectorAll('section'))
-
     handleScroll()
-
-    const onScroll = debounce(handleScroll, 10)
 
     window.addEventListener('scroll', onScroll)
     window.addEventListener('resize', onScroll)
