@@ -5,49 +5,42 @@ import { items } from './items'
 import { debounce } from 'lodash-es'
 
 export default function Page() {
-  const menuItems = React.useRef<HTMLAnchorElement[]>([])
   const sections = React.useRef<HTMLElement[]>([])
+  const [activeId, setActiveId] = React.useState<string>()
 
   function handleScroll() {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+    const scrollPosition = window.scrollY
 
-    menuItems.current.forEach((item) => item.classList.remove('active'))
-    sections.current.forEach((section, index) => {
-      const prevSection = sections.current[index - 1]
+    let currentActiveId: string | undefined
 
-      // 判断标题是否在视口中
+    sections.current.forEach((section) => {
       if (
-        section.offsetTop <= scrollTop &&
-        scrollTop < section.offsetTop + section.offsetHeight
+        section.offsetTop <= scrollPosition &&
+        scrollPosition < section.offsetTop + section.offsetHeight
       ) {
-        // 找到对应的菜单项并高亮
-        const menuItem = document.querySelector(`[data-target="${section.id}"]`)
-        if (menuItem) {
-          menuItem.classList.add('active')
-        }
-        return
-      }
-      if (
-        prevSection &&
-        prevSection.offsetTop + prevSection.offsetHeight <= scrollTop &&
-        scrollTop < section.offsetTop
-      ) {
-        // 找到对应的菜单项并高亮
-        const menuItem = document.querySelector(`[data-target="${section.id}"]`)
-        if (menuItem) {
-          menuItem.classList.add('active')
-        }
+        currentActiveId = section.id
       }
     })
+
+    if (currentActiveId !== activeId) {
+      setActiveId(currentActiveId)
+    }
   }
 
+  const onClick = debounce((e: React.MouseEvent<HTMLAnchorElement>) => {
+    const target = document.querySelector(
+      `#${(e.target as HTMLAnchorElement).dataset.target}`
+    )
+
+    target?.scrollIntoView({ behavior: 'smooth' })
+  }, 10)
+
   React.useEffect(() => {
-    menuItems.current = Array.from(document.querySelectorAll('[data-target]'))
     sections.current = Array.from(document.querySelectorAll('section'))
 
     handleScroll()
 
-    const onScroll = debounce(handleScroll, 100)
+    const onScroll = debounce(handleScroll, 10)
 
     window.addEventListener('scroll', onScroll)
     window.addEventListener('resize', onScroll)
@@ -64,24 +57,22 @@ export default function Page() {
         {items.map((item) => (
           <li key={item.id} className="w-[100px]">
             <a
-              href={`#${item.id}`}
               data-target={item.id}
-              onClick={(e) => {
-                e.preventDefault()
-                const target = document.querySelector(
-                  `#${(e.target as HTMLAnchorElement).dataset.target}`
-                )
-                target?.scrollIntoView({ behavior: 'smooth' })
-              }}
+              className={
+                item.id === activeId
+                  ? 'active cursor-pointer'
+                  : 'cursor-pointer'
+              }
+              onClick={onClick}
             >
               {item.name}
             </a>
           </li>
         ))}
       </ul>
-      <div className="space-y-[100px]">
+      <div>
         {items.map((item) => (
-          <section key={item.id} id={item.id} className="section">
+          <section key={item.id} id={item.id} className="py-[50px] section">
             <h2 className="text-2xl font-bold">{item.name}</h2>
             {item.content}
           </section>
