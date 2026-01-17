@@ -1,4 +1,10 @@
-export const items = new Array(10).fill(0).map((item, index) => ({
+export type Item = {
+  id: string
+  name: string
+  content: string
+}
+
+export const items: Item[] = new Array(10).fill(0).map((item, index) => ({
   id: `section${index + 1}`,
   name: `Item ${index + 1}`,
   content:
