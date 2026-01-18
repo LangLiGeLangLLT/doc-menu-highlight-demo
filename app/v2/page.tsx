@@ -23,6 +23,7 @@ export default function Page() {
         scrollMode: 'if-needed',
         block: 'center',
         inline: 'center',
+        behavior: 'smooth',
       })
     }, 100)
   }
@@ -36,10 +37,11 @@ export default function Page() {
     if (newActiveId) {
       onClick(newActiveId)
     } else {
-      const firstId = items[0]?.id
-      if (firstId) {
-        onClick(firstId)
-      }
+      setTimeout(() => {
+        scrollIntoView(document.body, {
+          block: 'start',
+        })
+      }, 100)
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
