@@ -38,7 +38,6 @@ export default function Page() {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const newActiveId = entry.target.getAttribute('data-id') || ''
-            console.log(newActiveId)
             setActiveId(newActiveId)
           }
         })
