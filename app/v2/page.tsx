@@ -82,7 +82,6 @@ export default function Page() {
         {items.map((item) => (
           <li key={item.id} className="w-[100px]">
             <a
-              data-target={item.id}
               className={
                 item.id === activeId
                   ? 'active cursor-pointer'
