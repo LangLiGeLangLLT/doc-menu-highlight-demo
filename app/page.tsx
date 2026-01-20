@@ -31,7 +31,7 @@ export default function Page() {
 
   const onClick = debounce((e: React.MouseEvent<HTMLAnchorElement>) => {
     const target = document.querySelector(
-      `#${(e.target as HTMLAnchorElement).dataset.target}`
+      `#${(e.target as HTMLAnchorElement).dataset.target}`,
     )
 
     target?.scrollIntoView({ behavior: 'smooth' })
@@ -71,7 +71,7 @@ export default function Page() {
       </ul>
       <div>
         {items.map((item) => (
-          <section key={item.id} id={item.id} className="py-[50px] section">
+          <section key={item.id} id={item.id} className="py-[50px]">
             <h2 className="text-2xl font-bold">{item.name}</h2>
             {item.content}
           </section>

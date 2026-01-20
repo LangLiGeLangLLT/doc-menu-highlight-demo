@@ -2,48 +2,78 @@
 
 import React from 'react'
 import { items } from '@/app/items'
-import Section from './section'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { useRouter } from 'next/navigation'
 
 export default function Page() {
   const [activeId, setActiveId] = React.useState<string>()
-  const ref = React.useRef<HTMLDivElement>(null)
+  const observerRef = React.useRef<IntersectionObserver>(null)
+  const containerRef = React.useRef<HTMLDivElement>(null)
   const router = useRouter()
+  const appNavbarHeight = 0
 
-  function onClick(id: string) {
-    if (!ref.current) return
-
-    const el = ref.current.querySelector(`h2[data-id="${id}"]`)
-
-    if (!el) return
-
-    setTimeout(() => {
-      scrollIntoView(el, {
+  function onScrollToSection(id: string) {
+    const element = containerRef.current?.querySelector(
+      `section[data-id="${id}"]`,
+    )
+    if (element) {
+      scrollIntoView(element, {
         scrollMode: 'if-needed',
         block: 'center',
         inline: 'center',
         behavior: 'smooth',
       })
-    }, 100)
+    }
+
+    router.push(`#${id}`, { scroll: false })
   }
 
-  function onActiveIdChange(id: string) {
-    setActiveId(id)
-  }
+  React.useEffect(() => {
+    if (observerRef.current) {
+      observerRef.current.disconnect()
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const newActiveId = entry.target.getAttribute('data-id') || ''
+            console.log(newActiveId)
+            setActiveId(newActiveId)
+          }
+        })
+      },
+      {
+        rootMargin: `-${appNavbarHeight}px 0px -50% 0px`,
+        threshold: 0.1,
+      },
+    )
+
+    items.forEach((item) => {
+      const element = containerRef.current?.querySelector(
+        `section[data-id="${item.id}"]`,
+      )
+      if (element) {
+        observer.observe(element)
+      }
+    })
+
+    observerRef.current = observer
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+      }
+    }
+  }, [])
 
   React.useEffect(() => {
     const newActiveId = window.location.hash.replace('#', '')
     if (newActiveId) {
-      onClick(newActiveId)
+      onScrollToSection(newActiveId)
     } else {
-      setTimeout(() => {
-        scrollIntoView(document.body, {
-          block: 'start',
-        })
-      }, 100)
+      router.refresh()
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -59,23 +89,19 @@ export default function Page() {
                   ? 'active cursor-pointer'
                   : 'cursor-pointer'
               }
-              onClick={() => {
-                onClick(item.id)
-                router.replace(`#${item.id}`, { scroll: false })
-              }}
+              onClick={() => onScrollToSection(item.id)}
             >
               {item.name}
             </a>
           </li>
         ))}
       </ul>
-      <div ref={ref}>
+      <div ref={containerRef}>
         {items.map((item) => (
-          <Section
-            key={item.id}
-            item={item}
-            onActiveIdChange={onActiveIdChange}
-          />
+          <section key={item.id} data-id={item.id} className="py-[50px]">
+            <h2 className="text-2xl font-bold">{item.name}</h2>
+            {item.content}
+          </section>
         ))}
       </div>
     </div>
